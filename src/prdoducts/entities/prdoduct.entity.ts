@@ -1,4 +1,5 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { ProductImage } from "./product-image.entity";
 @Entity('')
 export class Prdoduct {
     @PrimaryGeneratedColumn('uuid')
@@ -20,6 +21,9 @@ export class Prdoduct {
     gender: string;
     @Column('text', { array: true, default: [] })
     tags: string[];
+    // relacion con imagenes decirle al producto que tiene imagenes y a las imagenes que van a tener un producto
+    @OneToMany(() => ProductImage, (productImage) => productImage.product, { cascade: true, eager: true })
+    images?: ProductImage[];
 
 
 

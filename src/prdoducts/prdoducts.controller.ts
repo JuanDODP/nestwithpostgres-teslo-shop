@@ -21,7 +21,7 @@ export class PrdoductsController {
 
   @Get(':term')
   async findOne(@Param('term', ) term: string) {
-    const prdoduct = await this.prdoductsService.findOne(term);
+    const prdoduct = await this.prdoductsService.findOnePlain(term);
     if(!prdoduct) {
      throw new NotFoundException(`Product with id ${term} not found`);
     }

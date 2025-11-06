@@ -124,6 +124,9 @@ export class PrdoductsService {
   }
   // Eliminacion de todos los productos
   async deleteAllProducts() {
+    console.log('================================================')
+    console.log('SE EJECUTO ESA FUNCION')
+    console.log('================================================')
     const query = this.prdoductRepository.createQueryBuilder('prdoduct');
     try {
       return await query

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { SeedService } from './seed.service';
 
 
@@ -10,9 +10,7 @@ export class SeedController {
 @Get() executeSeed() {
     return this.seedService.runSeed();
   }
-  private insertProducts() {
-    return this.seedService.runSeed();
-  }
+ 
  
 }
  

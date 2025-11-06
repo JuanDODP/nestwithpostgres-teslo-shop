@@ -10,7 +10,7 @@ export class ProductImage {
   @ManyToOne(
     () => Prdoduct,
     (prdoduct) => prdoduct.images,
-    // { onDelete: 'CASCADE' }
+      { onDelete: 'CASCADE' }
   )
   product:Prdoduct
 //   productId: string;

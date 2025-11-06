@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreatePrdoductDto } from './dto/create-prdoduct.dto';
 import { UpdatePrdoductDto } from './dto/update-prdoduct.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { validate as isUUID } from 'uuid'
 import { Prdoduct, ProductImage } from './entities';
@@ -15,6 +15,8 @@ export class PrdoductsService {
     private readonly prdoductRepository: Repository<Prdoduct>,
     @InjectRepository(ProductImage)
     private readonly prdoductImageRepository: Repository<ProductImage>,
+    // nueva dependencia para el query runner
+    private readonly dataSource: DataSource
   ) { }
   async create(createPrdoductDto: CreatePrdoductDto) {
     const { images = [], ...productDetails } = createPrdoductDto
@@ -24,7 +26,7 @@ export class PrdoductsService {
         images: images.map(image => this.prdoductImageRepository.create({ url: image })),
       });
       await this.prdoductRepository.save(prdoduct);
-      return {...prdoduct, images}
+      return { ...prdoduct, images }
 
     } catch (error) {
 
@@ -37,13 +39,13 @@ export class PrdoductsService {
     const products = await this.prdoductRepository.find({
       take: limit,
       skip: offset,
-      relations:{
-        images:true
+      relations: {
+        images: true
       }
     });
     return products.map(product => ({
       ...product,
-      images: product.images?.map((img) => img.url) ||[]
+      images: product.images?.map((img) => img.url) || []
     }));
   }
 
@@ -69,7 +71,7 @@ export class PrdoductsService {
   }
   // nueva funcion para buscar y aplanar las imagenes
   async findOnePlain(term: string) {
-    const {images=[], ...res} = await this.findOne(term);
+    const { images = [], ...res } = await this.findOne(term);
     return {
       ...res,
       images: images?.map((img) => img.url) || []
@@ -77,18 +79,31 @@ export class PrdoductsService {
   }
 
   async update(id: string, updatePrdoductDto: UpdatePrdoductDto) {
+    const { images, ...toUpdate } = updatePrdoductDto;
+    const prdoduct = await this.prdoductRepository.preload({
+      id, ...toUpdate,
+    });
+    if (!prdoduct) throw new NotFoundException(`Product with id ${id} not found`);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const prdoduct = await this.prdoductRepository.preload({
-        id,
-        ...updatePrdoductDto,
-        images: []
-      });
-      if (!prdoduct) {
-        throw new BadRequestException(`Product with id ${id} not found`);
+      if (images) {
+        await queryRunner.manager.delete(ProductImage, { product: { id } });
+        prdoduct.images = images.map(
+          image => this.prdoductImageRepository.create({ url: image })
+        );
       }
+      await queryRunner.manager.save(prdoduct);
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+
       await this.prdoductRepository.save(prdoduct);
-      return prdoduct;
+      return this.findOnePlain(id);
     } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       this.handleDBExceptions(error);
     }
   }
@@ -106,5 +121,17 @@ export class PrdoductsService {
     }
     this.logger.error(error);
     throw new InternalServerErrorException('Could not create product');
+  }
+  // Eliminacion de todos los productos
+  async deleteAllProducts() {
+    const query = this.prdoductRepository.createQueryBuilder('prdoduct');
+    try {
+      return await query
+        .delete()
+        .where({})
+        .execute();
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 }

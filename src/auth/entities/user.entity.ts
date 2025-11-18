@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('users')
 export class User {
@@ -10,8 +10,18 @@ export class User {
     password: string;
     @Column('text')
     fullName: string;
-    @Column('boolean', { default: true})
+    @Column('boolean', { default: true })
     isActive: boolean;
     @Column('text', { array: true, default: ['user'] })
     rol: string[];
+
+    // es para grabar todos los emails en minusculas
+    @BeforeInsert()
+    normalizeEmail() {
+        this.email = this.email.toLowerCase().trim();
+    }
+    @BeforeUpdate()
+    checkEmailUpdate() {
+        this.normalizeEmail();
+    }
 }

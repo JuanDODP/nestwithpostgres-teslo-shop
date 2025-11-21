@@ -24,7 +24,10 @@ export class AuthService {
       await this.userRepository.save(user);
       delete (user as any).password;
 
-      return user;
+      return {
+        ...user,
+        token: await this.getJwtToken({ id: user.id })
+      };
       //  TOdo : retornar el JWT
     } catch (error) {
       // Manejo de errores (por ejemplo, email duplicado)
@@ -42,15 +45,16 @@ export class AuthService {
     const { email, password } = loginUserDto;
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { email: true, password: true }
+      select: { email: true, password: true, id: true },
     });
     if (!user)
       throw new UnauthorizedException('Credenciales incorrectas - email');
     if (!bcrypt.compareSync(password, user.password))
       throw new UnauthorizedException('Credenciales incorrectas - password');
+   
     return {
       ...user,
-      token: await this.getJwtToken({ email: user.email })
+      token: await this.getJwtToken({ id: user.id })
       
     };
   }

@@ -3,11 +3,12 @@ import { SeedService } from './seed.service';
 import { SeedController } from './seed.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PrdoductsModule } from 'src/prdoducts/prdoducts.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   controllers: [SeedController],
   providers: [SeedService],
-  imports: [PrdoductsModule,],
+  imports: [PrdoductsModule, AuthModule],
 
 })
 export class SeedModule { }

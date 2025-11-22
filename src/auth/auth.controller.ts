@@ -4,8 +4,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from './entities/user.entity';
-import { GetRawHeaders, GetUser } from './decorators';
+import { Auth, GetRawHeaders, GetUser, RoleProtected } from './decorators';
 import { UserRolGuard } from './guards/user-rol/user-rol.guard';
+import { ValidRoles } from './interface';
 
 @Controller('auth')
 export class AuthController {
@@ -64,8 +65,10 @@ export class AuthController {
     }
   }
   @Get('private2')
-  @SetMetadata('roles', ['admin', 'super-user'])
+  // @SetMetadata(META_ROLES, ['admin', 'super-user'])
+  @RoleProtected(ValidRoles.ADMIN, )
   @UseGuards(AuthGuard(), UserRolGuard)
+
   testingPrivateRoute2(
     @GetUser() user: User,
 
@@ -74,6 +77,19 @@ export class AuthController {
       ok: true,
       message: 'Hola mundo private2',
       user
+
+    }
+  }
+  @Get('private3')
+   @Auth(ValidRoles.ADMIN)
+  testingPrivateRoute3(
+    @GetUser() user: User,
+
+  ) {
+    return {
+      ok: true,
+      message: 'Hola mundo private3',
+      user  
 
     }
   }

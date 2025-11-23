@@ -6,6 +6,7 @@ import { DataSource, Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { validate as isUUID } from 'uuid'
 import { Prdoduct, ProductImage } from './entities';
+import { User } from '../auth/entities/user.entity';
 
 @Injectable()
 export class PrdoductsService {
@@ -18,12 +19,13 @@ export class PrdoductsService {
     // nueva dependencia para el query runner
     private readonly dataSource: DataSource
   ) { }
-  async create(createPrdoductDto: CreatePrdoductDto) {
+  async create(createPrdoductDto: CreatePrdoductDto, user:User) {
     const { images = [], ...productDetails } = createPrdoductDto
     try {
       const prdoduct = this.prdoductRepository.create({
         ...productDetails,
         images: images.map(image => this.prdoductImageRepository.create({ url: image })),
+        user
       });
       await this.prdoductRepository.save(prdoduct);
       return { ...prdoduct, images }
@@ -78,7 +80,7 @@ export class PrdoductsService {
     };
   }
 
-  async update(id: string, updatePrdoductDto: UpdatePrdoductDto) {
+  async update(id: string, updatePrdoductDto: UpdatePrdoductDto, user:User) {
     const { images, ...toUpdate } = updatePrdoductDto;
     const prdoduct = await this.prdoductRepository.preload({
       id, ...toUpdate,
@@ -95,6 +97,7 @@ export class PrdoductsService {
           image => this.prdoductImageRepository.create({ url: image })
         );
       }
+      prdoduct.user = user;
       await queryRunner.manager.save(prdoduct);
       await queryRunner.commitTransaction();
       await queryRunner.release();

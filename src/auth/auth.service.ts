@@ -39,7 +39,14 @@ export class AuthService {
 
     return `Esta acción crea un nuevo usuario con los datos: ${JSON.stringify(CreateUserDto)}`;
   }
-
+// Verificar el estado del usuario
+  async checkAuthStatus( user: User ) {
+    return {
+      ...user,
+      token: await this.getJwtToken({ id: user.id })
+    };
+  }
+// ============================================================
   async login(loginUserDto: LoginUserDto) {
     // return `Esta acción loguea un usuario con los datos: ${JSON.stringify(loginUserDto)}`;
     const { email, password } = loginUserDto;
@@ -51,11 +58,11 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales incorrectas - email');
     if (!bcrypt.compareSync(password, user.password))
       throw new UnauthorizedException('Credenciales incorrectas - password');
-   
+
     return {
       ...user,
       token: await this.getJwtToken({ id: user.id })
-      
+
     };
   }
 

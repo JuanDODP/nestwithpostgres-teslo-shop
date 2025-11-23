@@ -1,4 +1,5 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Prdoduct } from "../../prdoducts/entities/prdoduct.entity";
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('users')
 export class User {
@@ -14,7 +15,11 @@ export class User {
     isActive: boolean;
     @Column('text', { array: true, default: ['user'] })
     rol: string[];
-
+    // =============================================================
+    //  Relacion con los productos de uno a muchos
+    @OneToMany(() => Prdoduct, (product) => product.user)
+    products: Prdoduct[];
+    
     // es para grabar todos los emails en minusculas
     @BeforeInsert()
     normalizeEmail() {
@@ -23,5 +28,5 @@ export class User {
     @BeforeUpdate()
     checkEmailUpdate() {
         this.normalizeEmail();
-    }
+    } 
 }

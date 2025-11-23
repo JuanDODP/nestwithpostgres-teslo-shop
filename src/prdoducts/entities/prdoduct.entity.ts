@@ -1,5 +1,6 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { ProductImage } from "./product-image.entity";
+import { User } from '../../auth/entities/user.entity';
 @Entity({ name: 'prdoducts' })
 export class Prdoduct {
     @PrimaryGeneratedColumn('uuid')
@@ -7,7 +8,7 @@ export class Prdoduct {
     @Column('text', { unique: true })
 
     title: string;
-    @Column('float',{ default: 0 })
+    @Column('float', { default: 0 })
     price: number;
     @Column({ type: 'text', nullable: true })
     description: string;
@@ -25,7 +26,9 @@ export class Prdoduct {
     @OneToMany(() => ProductImage, (productImage) => productImage.product, { cascade: true, eager: true })
     images?: ProductImage[];
 
-
+    // Relacion de muchos a uno con el usuario
+    @ManyToOne(() => User, (user) => user.products, { eager: true })
+    user: User;
 
     // other functions
     @BeforeInsert()
@@ -39,6 +42,6 @@ export class Prdoduct {
     @BeforeUpdate()
     checkUpdate() {
         this.slug = this.slug.toLowerCase().replaceAll(' ', '_').replaceAll("'", '')
-    }   
+    }
 
 }

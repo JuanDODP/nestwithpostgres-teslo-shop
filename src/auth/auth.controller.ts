@@ -11,17 +11,26 @@ import { ValidRoles } from './interface';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
+// Registrar un usuario 
 
-  @Post('register')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.authService.create(createUserDto);
-  }
+@Post('register')
+create(@Body() createUserDto: CreateUserDto) {
+  return this.authService.create(createUserDto);
+}
+// ============================================================
+// Verificar el estado del usuario
+@Get('check-status')
+@Auth(ValidRoles.ADMIN)
+checkAuthStatus(@GetUser() user: User) {
+  return this.authService.checkAuthStatus(user);
+}
+// ============================================================
+
 
   @Post('login')
   login(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);
   }
-
   // @Get()
   // findAll() {
   //   return this.authService.findAll();
@@ -66,7 +75,7 @@ export class AuthController {
   }
   @Get('private2')
   // @SetMetadata(META_ROLES, ['admin', 'super-user'])
-  @RoleProtected(ValidRoles.ADMIN, )
+  @RoleProtected(ValidRoles.ADMIN,)
   @UseGuards(AuthGuard(), UserRolGuard)
 
   testingPrivateRoute2(
@@ -81,7 +90,7 @@ export class AuthController {
     }
   }
   @Get('private3')
-   @Auth(ValidRoles.ADMIN)
+  @Auth(ValidRoles.ADMIN)
   testingPrivateRoute3(
     @GetUser() user: User,
 
@@ -89,7 +98,7 @@ export class AuthController {
     return {
       ok: true,
       message: 'Hola mundo private3',
-      user  
+      user
 
     }
   }

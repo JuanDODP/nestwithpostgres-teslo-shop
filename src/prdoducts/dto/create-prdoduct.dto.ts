@@ -1,4 +1,5 @@
 import { IsArray, IsIn, IsNumber, IsOptional, IsPositive, IsString, Min, MinLength } from "class-validator";
+import { User } from '../../auth/entities/user.entity';
 
 export class CreatePrdoductDto {
     @IsString()
@@ -32,5 +33,7 @@ export class CreatePrdoductDto {
     @IsArray()
     @IsOptional()
     images?: string[];
+    
+    // user:User
 
 }

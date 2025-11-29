@@ -12,7 +12,7 @@ export class PrdoductsController {
   constructor(private readonly prdoductsService: PrdoductsService) { }
 
   @Post()
-  @Auth(ValidRoles.ADMIN)
+  @Auth()
   create(
     @Body() createPrdoductDto: CreatePrdoductDto,
     @GetUser() user: User
@@ -25,7 +25,7 @@ export class PrdoductsController {
     console.log({ paginationDto })
     return this.prdoductsService.findAll(paginationDto);
   }
-
+// arreglar el findOnePlain
   @Get(':term')
   async findOne(@Param('term',) term: string) {
     const prdoduct = await this.prdoductsService.findOnePlain(term);
